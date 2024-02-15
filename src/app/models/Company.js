@@ -8,10 +8,11 @@ class Company extends Model {
       },
       {
         sequelize,
-        tableName: 'companies',
+        tableName: "companies",
       }
     );
+    return this;
   }
 }
 
-export default Company
+export default Company;
