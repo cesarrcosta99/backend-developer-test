@@ -10,5 +10,6 @@ routes.post("/job", JobController.store);
 routes.put("/job/:job_id/publish", JobController.publish);
 routes.put("/job/:job_id", JobController.update);
 routes.delete("/job/:job_id", JobController.delete);
+routes.put("/job/:job_id/archive", JobController.archive);
 
 export default routes;

@@ -97,6 +97,26 @@ class JobController {
       return response.status(500).json({ error: err.message });
     }
   }
+
+  async archive(request, response) {
+    const { job_id } = request.params;
+    try {
+      const job = await Job.findByPk(job_id);
+      if (!job) {
+        return response.status(404).json({ error: "Job not found" });
+      }
+
+      if (job.status === "archived") {
+        return response.status(400).json({ error: "Job is already archived" });
+      }
+
+      await job.update({ status: "archived" });
+
+      return response.json({ message: "Job has been archived successfully" });
+    } catch (err) {
+      return response.status(500).json({ error: err.message });
+    }
+  }
 }
 
 export default new JobController();
