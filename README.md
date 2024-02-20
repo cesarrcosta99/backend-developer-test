@@ -1,80 +1,51 @@
-# Backend Developer Technical Assessment
+# Projeto de Gerenciamento de Anúncios de Emprego
 
-## Welcome!
+Este projeto é uma API desenvolvida para gerenciar anúncios de emprego, implementando os casos de uso especificados na avaliação técnica para desenvolvedores de back-end. A API permite a criação, listagem, edição, exclusão e publicação de anúncios de emprego, além de listar empresas existentes e servir um feed de empregos publicados.
 
-We're excited to have you participate in our Backend Developer technical assessment. This test is designed to gauge your expertise in backend development, with a focus on architectural and organizational skills. Below, you'll find comprehensive instructions to set up and complete the project. Remember, completing every step is not mandatory; some are optional but can enhance your application.
+## Tecnologias e Ferramentas Utilizadas
 
-## Assessment Overview
+- Node.js (versão 20): Ambiente de execução para JavaScript no servidor.
+- Express.js: Framework para aplicativos web Node.js.
+- Yarn: Gerenciador de pacotes para o JavaScript.
+- Nodemon: Utilizado durante o desenvolvimento para reiniciar automaticamente o servidor quando arquivos são alterados.
+- PostgreSQL: Banco de dados relacional para armazenar dados de empresas e empregos.
+- Docker: Para rodar uma instância local do PostgreSQL em um contêiner.
+- Insomnia/Postman: Ferramentas recomendadas para testar os endpoints da API.
 
-Your task is to develop a NodeJS API for a job posting management application. Analyze the application details and use cases, and translate them into functional endpoints.
+### Configuração do Ambiente
 
-### Application Components
+1. Certifique-se de ter o Node.js (versão 20) e o Yarn instalados.
+2. Clone este repositório para sua máquina local.
 
-Your solution should incorporate the following components and libraries:
+## Banco de Dados
 
-1. **Relational Database**: Utilize a SQL database (PostgreSQL 16) with two tables (`companies` and `jobs`). The DDL script in the `ddl` folder of this repository initializes these tables. The `companies` table is pre-populated with fictitious records, which you should not modify. Focus on managing records in the `jobs` table. You don't need to worry about setting up the database, consider the database is already running in the cloud. Your code only needs to handle database connections. To test your solution, use your own database running locally or in the server of your choice.
+Utilizei um contêiner Docker chamado testebackend-postgres para o PostgreSQL. Para recriar este ambiente, execute:
+(docker run --name testebackend-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=testebackend -p 5432:5432 -d postgres)
 
-2. **REST API**: Develop using NodeJS (version 20) and ExpressJS. This API will manage the use cases described below.
 
-3. **Serverless Environment**: Implement asynchronous, event-driven logic using AWS Lambda and AWS SQS for queue management.
+## Iniciando o Projeto
 
-4. **Job Feed Repository**: Integrate a job feed with AWS S3. This feed should periodically update a JSON file reflecting the latest job postings.
+1. Na raiz do projeto, execute yarn install para instalar as dependências.
+2. Inicie o projeto com yarn dev. Nodemon será utilizado para reiniciar o servidor automaticamente a cada mudança.
 
-### User Actions
+## Testando a Aplicação
 
-Convert the following use cases into API endpoints:
+Recomenda-se utilizar Insomnia ou Postman para testar os endpoints da API:
 
-- `GET /companies`: List existing companies.
-- `GET /companies/:company_id`: Fetch a specific company by ID.
-- `POST /job`: Create a job posting draft.
-- `PUT /job/:job_id/publish`: Publish a job posting draft.
-- `PUT /job/:job_id`: Edit a job posting draft (title, location, description).
-- `DELETE /job/:job_id`: Delete a job posting draft.
-- `PUT /job/:job_id/archive`: Archive an active job posting.
+- GET /companies: Listar empresas existentes.
+- GET /companies/:company_id: Buscar uma empresa específica por ID.
+- POST /job: Criar um rascunho de anúncio de emprego.
+- Etc.
 
-### Integration Features
+ A aplicação estará disponível em http://localhost:3000/.
 
-- Implement a `GET /feed` endpoint to serve a job feed in JSON format, containing published jobs (column `status = 'published'`). Use a caching mechanism to handle high traffic, fetching data from an S3 file updated periodically by an AWS Lambda function. The feed should return the job ID, title, description, company name and the date when the job was created. This endpoint should not query the database, the content must be fetched from S3.
-- This endpoint receives a massive number of requests every minute, so the strategy here is to implement a simple cache mechanism that will fetch a previously stored JSON file containing the published jobs and serve the content in the API. You need to implement a serverless component using AWS Lambda, that will periodically query the published jobs and store the content on S3. The `GET /feed` endpoint should fetch the S3 file and serve the content. You don't need to worry about implementing the schedule, assume it is already created using AWS EventBridge. You only need to create the Lambda component, using NodeJS 20 as a runtime.
+## Nota Sobre a Simulação das Funcionalidades AWS
+Durante o desenvolvimento deste projeto de API para o gerenciamento de anúncios de emprego, encontrei um desafio significativo relacionado à integração com os serviços da AWS, incluindo AWS Lambda, AWS SQS e AWS S3. Este desafio surgiu devido à política de cadastro da AWS, que exige um cartão de crédito para a criação de uma conta. Infelizmente, meu cartão de débito não foi aceito no processo de inscrição, e no momento, não disponho de um cartão de crédito para completar a inscrição na plataforma AWS.Com o objetivo de contornar a restrição de acesso aos serviços da AWS e ainda assim cumprir os requisitos do projeto, adotei uma abordagem para simular localmente as funcionalidades que seriam proporcionadas pelo AWS Lambda, AWS SQS e S3. Esta simulação inclui a implementação de um sistema de gerenciamento de filas para o processo de publicação dos anúncios de emprego e a criação de um mecanismo de cache para o feed de empregos, refletindo a lógica que seria utilizada em um ambiente de produção na AWS.
 
-### Extra Feature (Optional)
+## Respostas às Perguntas Bônus
+Para detalhes sobre as soluções propostas para as perguntas bônus, veja BONUS_ANSWERS.md.
 
-- **Job Moderation**: using artificial intelligence, we need to moderate the job content before allowing it to be published, to check for potential harmful content.
-Every time a user requests a job publication (`PUT /job/:job_id/publish`), the API should reply with success to the user, but the job should not be immediately published. It should be queued using AWS SQS, feeding the job to a Lambda component.
-Using OpenAI's free moderation API, create a Lambda component that will evaluate the job title and description, and test for hamrful content. If the content passes the evaluation, the component should change the job status to `published`, otherwise change to `rejected` and add the response from OpenAI API to the `notes` column.
+## Nota Sobre o Uso de Ferramentas de IA
 
-### Bonus Questions
-
-1. Discuss scalability solutions for the job moderation feature under high load conditions. Consider that over time the system usage grows significantly, to the point where we will have thousands of jobs published every hour. Consider the API will be able to handle the requests, but the serverless component will be overwhelmed with requests to moderate the jobs. This will affect the database connections and calls to the OpenAI API. How would you handle those issues and what solutions would you implement to mitigate the issues?
-2. Propose a strategy for delivering the job feed globally with sub-millisecond latency. Consider now that we need to provide a low latency endpoint that can serve the job feed content worldwide. Using AWS as a cloud provider, what technologies would you need to use to implement this feature and how would you do it?
-
-## Instructions
-
-1. Fork this repository and create a branch named after yourself.
-2. Develop the solution in your branch.
-3. Use your AWS account or other environment of your choice to test and validate your solution.
-4. Update the README with setup and execution instructions.
-5. Complete your test by sending a message through the Plooral platform with your repository link and branch name.
-
-## Evaluation Criteria
-
-We will assess:
-
-- Knowledge of JavaScript, Node.js, Express.js.
-- Proficiency with serverless components (Lambda, SQS).
-- Application structure and layering.
-- Effective use of environment variables.
-- Implementation of unit tests, logging, and error handling.
-- Documentation quality and code readability.
-- Commit history and overall code organization.
-
-Good luck, and we're looking forward to seeing your innovative solutions!
-Implementation of the user actions and integration features is considered mandatory for the assessment. The extra feature and the bonus questions are optional, but we encourage you to complete them as well, it will give you an additional edge over other candidates.
-
-## A Note on the Use of AI Tools
-
-In today's evolving tech landscape, AI tools such as ChatGPT and GitHub Copilot have become valuable resources for developers. We recognize the potential of these tools in aiding problem-solving and coding. While we do not prohibit the use of AI in this assessment, we encourage you to primarily showcase your own creativity and problem-solving skills. Your ability to think critically and design solutions is what we're most interested in.
-
-That said, if you do choose to utilize AI tools, we would appreciate it if you could share details about this in your submission. Include the prompts you used, how you interacted with the AI, and how it influenced your development process. This will give us additional insight into your approach to leveraging such technologies effectively.
-
-Remember, this assessment is not just about getting to the solution, but also about demonstrating your skills, creativity, and how you navigate and integrate the use of emerging technologies in your work.
+Durante o desenvolvimento deste projeto, utilizei o ChatGPT como uma ferramenta de suporte para esclarecer dúvidas de programação e explorar diferentes abordagens de resolução de problemas. 
+A utilização do ChatGPT foi feita com o intuito de aprimorar meu entendimento em áreas específicas e acelerar o desenvolvimento sem comprometer a originalidade e a qualidade do trabalho entregue. Cada interação com a ferramenta foi cuidadosamente considerada e integrada ao projeto, garantindo que a essência e a execução final refletissem minhas habilidades e abordagem pessoal.
