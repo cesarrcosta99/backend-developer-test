@@ -5,6 +5,7 @@ Este projeto é uma API desenvolvida para gerenciar anúncios de emprego, implem
 ## Tecnologias e Ferramentas Utilizadas
 
 - Node.js (versão 20): Ambiente de execução para JavaScript no servidor.
+- Sequelize: ORM (Object-Relational Mapping) para Node.js
 - Express.js: Framework para aplicativos web Node.js.
 - Yarn: Gerenciador de pacotes para o JavaScript.
 - Nodemon: Utilizado durante o desenvolvimento para reiniciar automaticamente o servidor quando arquivos são alterados.
